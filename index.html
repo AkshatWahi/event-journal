@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-cardstyle="bordered">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Event Journal</title>
+<meta name="version" content="7.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ---- NOTION LIGHT (default) ---- */
+:root {
+  --bg:           #ffffff;
+  --bg-secondary: #f7f6f3;
+  --surface:      #ffffff;
+  --surface2:     #f1f0ed;
+  --border:       #e9e9e7;
+  --border-strong:#d3d1cb;
+  --text:         #37352f;
+  --text-muted:   #9b9a97;
+  --text-faint:   #c7c6c2;
+  --accent:       #37352f;
+  --danger:       #d44c47;
+  --shadow:       0 1px 3px rgba(0,0,0,0.06);
+  --mono: 'IBM Plex Mono', 'Courier New', 'Menlo', monospace;
+  --sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+  --note-border:    #2383e2; --note-tint:    #e8f3fc; --note-text:    #2383e2;
+  --contact-border: #0f7b6c; --contact-tint: #e3f5f1; --contact-text: #0f7b6c;
+  --photo-border:   #9065b0; --photo-tint:   #f3eef8; --photo-text:   #9065b0;
+  --thought-border: #cb912f; --thought-tint: #fdf3e3; --thought-text: #cb912f;
+  --todo-border:    #d44c47; --todo-tint:    #fdecea; --todo-text:    #d44c47;
+  --link-border:    #448361; --link-tint:    #e6f3ec; --link-text:    #448361;
+}
+/* ---- NOTION DARK ---- */
+[data-theme="dark"] {
+  --bg:           #191919;
+  --bg-secondary: #202020;
+  --surface:      #252525;
+  --surface2:     #2d2d2d;
+  --border:       #373737;
+  --border-strong:#4a4a4a;
+  --text:         #e6e6e3;
+  --text-muted:   #8a8a85;
+  --text-faint:   #555550;
+  --accent:       #e6e6e3;
+  --danger:       #e06c6c;
+  --shadow:       0 1px 4px rgba(0,0,0,0.3);
+  --note-border:    #4a9ede; --note-tint:    #1e2e3d; --note-text:    #6db3f2;
+  --contact-border: #2ea68a; --contact-tint: #1a2e2a; --contact-text: #4ec9ac;
+  --photo-border:   #b07fcc; --photo-tint:   #2a1f33; --photo-text:   #c49fe0;
+  --thought-border: #d4a44c; --thought-tint: #2e2518; --thought-text: #e8c070;
+  --todo-border:    #e06c6c; --todo-tint:    #2e1e1e; --todo-text:    #f08080;
+  --link-border:    #5aab7e; --link-tint:    #1a2c22; --link-text:    #6ec995;
+}
+
+/* ---- CARD STYLES ---- */
+[data-cardstyle="bordered"] .entry-card {
+  background: var(--surface); border: 1px solid var(--border); border-left-width: 3px; box-shadow: var(--shadow);
+}
+[data-cardstyle="bordered"] .entry-card[data-type="note"]    { border-left-color: var(--note-border); }
+[data-cardstyle="bordered"] .entry-card[data-type="contact"] { border-left-color: var(--contact-border); }
+[data-cardstyle="bordered"] .entry-card[data-type="photo"]   { border-left-color: var(--photo-border); }
+[data-cardstyle="bordered"] .entry-card[data-type="thought"] { border-left-color: var(--thought-border); }
+[data-cardstyle="bordered"] .entry-card[data-type="todo"]    { border-left-color: var(--todo-border); }
+[data-cardstyle="bordered"] .entry-card[data-type="link"]    { border-left-color: var(--link-border); }
+
+[data-cardstyle="tinted"] .entry-card { border: 1px solid transparent; box-shadow: none; }
+[data-cardstyle="tinted"] .entry-card[data-type="note"]    { background: var(--note-tint);    border-color: var(--note-border); }
+[data-cardstyle="tinted"] .entry-card[data-type="contact"] { background: var(--contact-tint); border-color: var(--contact-border); }
+[data-cardstyle="tinted"] .entry-card[data-type="photo"]   { background: var(--photo-tint);   border-color: var(--photo-border); }
+[data-cardstyle="tinted"] .entry-card[data-type="thought"] { background: var(--thought-tint); border-color: var(--thought-border); }
+[data-cardstyle="tinted"] .entry-card[data-type="todo"]    { background: var(--todo-tint);    border-color: var(--todo-border); }
+[data-cardstyle="tinted"] .entry-card[data-type="link"]    { background: var(--link-tint);    border-color: var(--link-border); }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--bg-secondary); color: var(--text); min-height: 100vh; font-size: 15px; line-height: 1.5; transition: background 0.2s, color 0.2s; }
+.screen { display: none; flex-direction: column; min-height: 100vh; }
+.screen.active { display: flex; }
+
+/* HEADER */
+.header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 16px 20px; display: flex; align-items: center; gap: 12px; position: sticky; top: 0; z-index: 100; }
+.header h1 { font-family: var(--mono); font-size: 15px; font-weight: 600; letter-spacing: 0.02em; flex: 1; }
+.header-sub { font-size: 11px; color: var(--text-muted); font-family: var(--mono); margin-top: 2px; }
+.btn-back { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 20px; padding: 4px; line-height: 1; }
+.btn-back:hover { color: var(--text); }
+.header-actions { display: flex; gap: 8px; align-items: center; }
+.btn-icon { background: none; border: 1px solid var(--border); border-radius: 4px; padding: 6px 10px; cursor: pointer; font-family: var(--mono); font-size: 11px; color: var(--text-muted); letter-spacing: 0.03em; transition: border-color 0.15s, color 0.15s; }
+.btn-icon:hover { border-color: var(--accent); color: var(--text); }
+.btn-icon.danger:hover { border-color: var(--danger); color: var(--danger); }
+
+/* EVENTS LIST */
+.events-list { flex: 1; padding: 24px 20px; display: flex; flex-direction: column; gap: 12px; }
+.section-label { font-family: var(--mono); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+.event-card { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 16px 18px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--shadow); }
+.event-card:hover { border-color: var(--accent); box-shadow: 2px 2px 0 var(--accent); }
+.event-card-name { font-weight: 600; font-size: 15px; }
+.event-card-meta { font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+.event-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; margin-left: 12px; }
+.event-card-arrow { color: var(--text-muted); font-size: 20px; }
+.btn-delete-event { background: none; border: none; cursor: pointer; color: var(--border); font-size: 16px; padding: 2px 4px; line-height: 1; transition: color 0.15s; }
+.btn-delete-event:hover { color: var(--danger); }
+
+.export-status { display: inline-flex; align-items: center; gap: 5px; font-family: var(--mono); font-size: 10px; font-weight: 600; letter-spacing: 0.04em; margin-top: 5px; padding: 2px 7px; border-radius: 3px; }
+.export-status.never   { background: var(--todo-tint);    color: var(--todo-text);    border: 1px solid var(--todo-border); }
+.export-status.pending { background: var(--thought-tint); color: var(--thought-text); border: 1px solid var(--thought-border); }
+.export-status.done    { background: var(--contact-tint); color: var(--contact-text); border: 1px solid var(--contact-border); }
+.export-status-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+.btn-new-event { background: var(--accent); color: var(--bg); border: none; border-radius: 6px; padding: 14px 20px; font-family: var(--mono); font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: 0.04em; transition: opacity 0.15s; text-align: left; }
+.btn-new-event:hover { opacity: 0.85; }
+
+/* HAMBURGER */
+.hamburger-btn { background: none; border: none; cursor: pointer; padding: 6px; line-height: 1; display: flex; flex-direction: column; gap: 4px; justify-content: center; }
+.hamburger-btn span { display: block; width: 18px; height: 2px; background: var(--text-muted); border-radius: 1px; transition: background 0.15s; }
+.hamburger-btn:hover span { background: var(--text); }
+.hamburger-menu { display: none; position: absolute; top: 56px; right: 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.12); z-index: 200; min-width: 200px; overflow: hidden; animation: fadeIn 0.15s ease; }
+.hamburger-menu.open { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+.menu-item { display: block; width: 100%; padding: 13px 16px; font-family: var(--mono); font-size: 12px; color: var(--text); background: none; border: none; cursor: pointer; text-align: left; letter-spacing: 0.02em; transition: background 0.1s; border-bottom: 1px solid var(--border); }
+.menu-item:last-child { border-bottom: none; }
+.menu-item:hover { background: var(--surface2); }
+.menu-item .menu-item-sub { display: block; font-size: 10px; color: var(--text-muted); margin-top: 2px; font-weight: 400; }
+.menu-toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+.menu-toggle-label { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+.toggle-pill { display: flex; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+.toggle-pill button { border: none; background: none; padding: 3px 10px; font-family: var(--mono); font-size: 10px; cursor: pointer; color: var(--text-muted); transition: background 0.15s, color 0.15s; border-radius: 20px; }
+.toggle-pill button.active { background: var(--accent); color: var(--bg); }
+
+/* EMPTY STATE */
+.empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); font-family: var(--mono); font-size: 13px; line-height: 2; }
+
+/* TIMELINE */
+.timeline-container { flex: 1; overflow-y: auto; padding: 20px; padding-bottom: 160px; display: flex; flex-direction: column; }
+.timeline-day { font-family: var(--mono); font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; padding: 12px 0 8px; border-top: 1px solid var(--border); margin-top: 8px; }
+.timeline-day:first-child { border-top: none; margin-top: 0; }
+.entry-row { display: flex; gap: 12px; padding: 4px 0; }
+.entry-time { font-family: var(--mono); font-size: 11px; color: var(--text-faint); min-width: 42px; padding-top: 12px; flex-shrink: 0; }
+.entry-card { flex: 1; border-radius: 6px; padding: 10px 14px; position: relative; transition: background 0.15s; }
+.entry-type-badge { font-family: var(--mono); font-size: 9px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 5px; }
+.entry-card[data-type="note"]    .entry-type-badge { color: var(--note-text); }
+.entry-card[data-type="contact"] .entry-type-badge { color: var(--contact-text); }
+.entry-card[data-type="photo"]   .entry-type-badge { color: var(--photo-text); }
+.entry-card[data-type="thought"] .entry-type-badge { color: var(--thought-text); }
+.entry-card[data-type="todo"]    .entry-type-badge { color: var(--todo-text); }
+.entry-card[data-type="link"]    .entry-type-badge { color: var(--link-text); }
+.entry-content { font-size: 14px; line-height: 1.5; }
+.contact-grid { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; font-size: 13px; }
+.contact-label { font-family: var(--mono); font-size: 11px; color: var(--text-muted); padding-top: 1px; }
+.entry-photo-thumb { width: 100%; max-width: 180px; height: 120px; object-fit: cover; border-radius: 4px; cursor: pointer; display: block; border: 1px solid var(--border); transition: opacity 0.15s, transform 0.15s; }
+.entry-photo-thumb:hover { opacity: 0.85; transform: scale(1.02); }
+.photo-caption { font-size: 13px; color: var(--text-muted); font-style: italic; margin-top: 6px; }
+.todo-row { display: flex; align-items: flex-start; gap: 10px; }
+.todo-check { width: 16px; height: 16px; border: 1.5px solid var(--todo-border); border-radius: 2px; flex-shrink: 0; margin-top: 2px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--todo-border); transition: background 0.1s; }
+.todo-check.done { background: var(--todo-border); color: #fff; }
+.todo-text.done { text-decoration: line-through; color: var(--text-muted); }
+.link-title { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+.link-url { font-family: var(--mono); font-size: 11px; color: var(--link-text); text-decoration: none; display: inline-flex; align-items: center; gap: 5px; word-break: break-all; }
+.link-url:hover { text-decoration: underline; }
+.link-note { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.entry-delete { position: absolute; top: 8px; right: 8px; background: none; border: none; cursor: pointer; color: var(--border); font-size: 14px; line-height: 1; padding: 2px; transition: color 0.15s; }
+.entry-delete:hover { color: var(--danger); }
+.timeline-empty { text-align: center; padding: 60px 20px; color: var(--text-muted); font-family: var(--mono); font-size: 12px; line-height: 2.2; }
+
+/* LIGHTBOX */
+.lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 1000; align-items: center; justify-content: center; padding: 20px; }
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 100%; max-height: 90vh; object-fit: contain; border-radius: 4px; }
+.lightbox-caption { position: absolute; bottom: 24px; left: 0; right: 0; text-align: center; color: rgba(255,255,255,0.75); font-size: 13px; font-style: italic; padding: 0 20px; }
+.lightbox-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: #fff; font-size: 28px; cursor: pointer; line-height: 1; opacity: 0.7; }
+.lightbox-close:hover { opacity: 1; }
+
+/* INPUT AREA */
+.input-area { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 12px 16px; z-index: 200; }
+.slash-hint { font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-bottom: 8px; }
+.slash-hint span { background: var(--surface2); border: 1px solid var(--border); border-radius: 3px; padding: 1px 5px; margin-right: 4px; cursor: pointer; transition: background 0.1s; display: inline-block; margin-bottom: 3px; }
+.slash-hint span:hover { background: var(--border); }
+.main-input-row { display: flex; gap: 8px; align-items: flex-end; }
+.main-input { flex: 1; border: 1px solid var(--border); border-radius: 6px; padding: 10px 12px; font-family: var(--sans); font-size: 14px; background: var(--bg-secondary); color: var(--text); resize: none; min-height: 42px; max-height: 120px; outline: none; transition: border-color 0.15s; }
+.main-input:focus { border-color: var(--accent); }
+.btn-send { background: var(--accent); color: var(--bg); border: none; border-radius: 6px; width: 42px; height: 42px; cursor: pointer; font-size: 20px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.btn-send:hover { opacity: 0.8; }
+
+/* MODALS */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 300; align-items: flex-end; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--surface); border-radius: 8px 8px 0 0; padding: 20px; width: 100%; max-width: 600px; max-height: 90vh; overflow-y: auto; animation: slideUp 0.2s ease; }
+@keyframes slideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.modal-title { font-family: var(--mono); font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.modal-close { background: none; border: none; cursor: pointer; font-size: 20px; color: var(--text-muted); line-height: 1; }
+.form-field { margin-bottom: 14px; }
+.form-label { display: block; font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-bottom: 5px; letter-spacing: 0.04em; text-transform: uppercase; }
+.form-input { width: 100%; border: 1px solid var(--border); border-radius: 6px; padding: 9px 12px; font-family: var(--sans); font-size: 14px; background: var(--bg-secondary); color: var(--text); outline: none; transition: border-color 0.15s; }
+.form-input:focus { border-color: var(--accent); }
+textarea.form-input { resize: vertical; min-height: 70px; }
+.btn-submit { width: 100%; background: var(--accent); color: var(--bg); border: none; border-radius: 6px; padding: 12px; font-family: var(--mono); font-size: 13px; cursor: pointer; letter-spacing: 0.04em; margin-top: 4px; transition: opacity 0.15s; }
+.btn-submit:hover { opacity: 0.85; }
+.photo-preview-wrap { border: 1px dashed var(--border); border-radius: 6px; min-height: 120px; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+.photo-preview-wrap img { width: 100%; display: block; }
+.photo-placeholder { font-family: var(--mono); font-size: 12px; color: var(--text-muted); text-align: center; padding: 20px; }
+#photo-input, #restore-input { display: none; }
+
+/* EXPORT OPTIONS */
+.export-options { display: flex; flex-direction: column; gap: 10px; }
+.btn-export-opt { border: 1px solid var(--border); background: var(--bg-secondary); border-radius: 6px; padding: 14px 16px; cursor: pointer; font-family: var(--sans); font-size: 14px; text-align: left; transition: border-color 0.15s; }
+.btn-export-opt:hover { border-color: var(--accent); }
+.btn-export-opt strong { display: block; font-weight: 600; }
+.btn-export-opt small { color: var(--text-muted); font-size: 12px; }
+
+/* CONFIRM DIALOG */
+.confirm-message { font-size: 14px; line-height: 1.6; margin-bottom: 18px; }
+.confirm-message strong { font-weight: 600; }
+.confirm-warn { color: var(--danger); font-size: 13px; margin-top: 6px; font-family: var(--mono); }
+.confirm-buttons { display: flex; gap: 10px; }
+.btn-confirm-cancel { flex: 1; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 6px; padding: 11px; font-family: var(--mono); font-size: 13px; cursor: pointer; color: var(--text-muted); transition: border-color 0.15s; }
+.btn-confirm-cancel:hover { border-color: var(--accent); color: var(--text); }
+.btn-confirm-delete { flex: 1; background: var(--danger); border: none; border-radius: 6px; padding: 11px; font-family: var(--mono); font-size: 13px; cursor: pointer; color: #fff; transition: opacity 0.15s; }
+.btn-confirm-delete:hover { opacity: 0.85; }
+
+/* RESTORE SUMMARY */
+.restore-summary { background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; padding: 14px 16px; margin-bottom: 16px; }
+.restore-summary-row { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 12px; padding: 2px 0; }
+.restore-summary-row span:first-child { color: var(--text-muted); }
+.restore-summary-row span:last-child { font-weight: 600; }
+.restore-note { font-family: var(--mono); font-size: 11px; color: var(--text-muted); margin-top: 10px; line-height: 1.6; }
+
+/* TOAST */
+.toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--accent); color: var(--bg); font-family: var(--mono); font-size: 12px; padding: 8px 16px; border-radius: 6px; opacity: 0; transition: opacity 0.2s, transform 0.2s; pointer-events: none; white-space: nowrap; z-index: 999; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* PROGRESS */
+.progress-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; align-items: center; justify-content: center; }
+.progress-overlay.open { display: flex; }
+.progress-box { background: var(--surface); border-radius: 8px; padding: 24px 32px; text-align: center; font-family: var(--mono); font-size: 13px; color: var(--text-muted); min-width: 220px; }
+.progress-box strong { display: block; color: var(--text); margin-bottom: 8px; font-size: 14px; }
+
+/* ── Help modal ─────────────────────────────────────────── */
+.menu-item-help { color: var(--blue); }
+.modal-help-inner { max-width: 540px; width: 94vw; max-height: 86vh; border-radius: 12px; display: flex; flex-direction: column; }
+.help-body { overflow-y: auto; padding: 4px 20px 20px; flex: 1; }
+.help-section { margin-top: 20px; }
+.help-section-title { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.help-grid { display: flex; gap: 16px; flex-wrap: wrap; }
+.help-entry-types { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 7px; }
+.help-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text); }
+.help-tag { font-family: var(--mono); font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 4px; white-space: nowrap; min-width: 72px; display: inline-block; text-align: center; }
+.help-note    { background: rgba(35,131,226,0.12); color: #2383E2; }
+.help-contact { background: rgba(15,123,108,0.12); color: #0F7B6C; }
+.help-photo   { background: rgba(144,101,176,0.12); color: #9065B0; }
+.help-thought { background: rgba(203,145,47,0.12);  color: #CB912F; }
+.help-todo    { background: rgba(212,76,71,0.12);   color: #D44C47; }
+.help-link    { background: rgba(68,131,97,0.12);   color: #448361; }
+.help-privacy { flex: 1; min-width: 180px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 12px; }
+.help-privacy-title { font-weight: 700; color: var(--text-secondary); margin-bottom: 6px; font-size: 11px; }
+.help-privacy-row { padding: 3px 0; color: var(--text); }
+.help-local  { color: #448361; }
+.help-online { color: #CB912F; }
+.help-privacy-note { margin-top: 10px; font-size: 11px; color: var(--text-secondary); font-style: italic; line-height: 1.5; }
+.help-steps { display: flex; flex-direction: column; gap: 9px; }
+.help-step { display: flex; align-items: flex-start; gap: 12px; font-size: 13px; color: var(--text); line-height: 1.5; }
+.help-step-num { min-width: 24px; height: 24px; background: var(--blue); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; margin-top: 1px; }
+.help-pwa-note { font-size: 12px; color: var(--text-secondary); background: rgba(203,145,47,0.1); border: 1px solid rgba(203,145,47,0.3); border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; line-height: 1.5; }
+.help-pwa-blocks { display: flex; flex-direction: column; gap: 10px; }
+.help-pwa-block { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.help-pwa-platform { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 7px; }
+.help-pwa-steps { margin: 0; padding-left: 18px; font-size: 12px; color: var(--text-secondary); line-height: 1.8; }
+.help-pwa-steps b { color: var(--text); }
+.help-version { text-align: center; font-size: 11px; color: var(--text-secondary); padding: 12px 0 4px; opacity: 0.6; font-family: var(--mono); }
+.form-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+.form-label-hint { font-size: 10px; color: var(--text-secondary); font-weight: 400; margin-left: 6px; opacity: 0.7; }
+.form-hint { font-size: 11px; color: var(--text-secondary); text-align: right; margin-top: -6px; margin-bottom: 8px; opacity: 0.6; font-family: var(--mono); }
+</style>
+<meta name="application-name" content="Event Journal">
+<meta name="description" content="A pocket journal for events, fairs and trade shows. Works offline.">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<script>
+if ('serviceWorker' in navigator) {
+  const loc = window.location;
+  const isRealHost = loc.protocol === 'https:' && !loc.hostname.includes('claudeusercontent.com');
+  if (isRealHost) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(e => console.log('SW reg failed:', e));
+    });
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- SCREEN: EVENTS LIST -->
+<div id="screen-events" class="screen active">
+  <div class="header" style="position:relative">
+    <h1>Event Journal</h1>
+    <button class="hamburger-btn" onclick="EJ_toggleHamburger(event)" title="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="hamburger-menu" id="hamburger-menu">
+      <div class="menu-toggle-row">
+        <span class="menu-toggle-label">Theme</span>
+        <div class="toggle-pill">
+          <button id="theme-light-btn" class="active" onclick="EJ_setTheme('light')">Light</button>
+          <button id="theme-dark-btn" onclick="EJ_setTheme('dark')">Dark</button>
+        </div>
+      </div>
+      <div class="menu-toggle-row">
+        <span class="menu-toggle-label">Cards</span>
+        <div class="toggle-pill">
+          <button id="style-bordered-btn" class="active" onclick="EJ_setCardStyle('bordered')">Bordered</button>
+          <button id="style-tinted-btn" onclick="EJ_setCardStyle('tinted')">Tinted</button>
+        </div>
+      </div>
+      <button class="menu-item" onclick="EJ_createBackup(); EJ_closeHamburger()">
+        Create Backup
+        <span class="menu-item-sub">Download all events as ZIP</span>
+      </button>
+      <button class="menu-item" onclick="EJ_triggerRestore(); EJ_closeHamburger()">
+        Restore Backup
+        <span class="menu-item-sub">Import from backup ZIP</span>
+      </button>
+      <button class="menu-item menu-item-help" onclick="EJ_openModal('modal-help'); EJ_closeHamburger()">
+        ? Help
+        <span class="menu-item-sub">Features, quick start &amp; PWA setup</span>
+      </button>
+    </div>
+  </div>
+  <div class="events-list" id="events-list"></div>
+  <input type="file" id="restore-input" accept=".zip" onchange="EJ_handleRestoreFile(event)" />
+</div>
+
+<!-- SCREEN: EVENT TIMELINE -->
+<div id="screen-event" class="screen">
+  <div class="header">
+    <button class="btn-back" onclick="EJ_goHome()">&#8592;</button>
+    <div style="flex:1">
+      <h1 id="event-title">Event</h1>
+      <div class="header-sub" id="event-date-sub"></div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon danger" onclick="EJ_confirmDeleteEvent()">Delete</button>
+      <button class="btn-icon" onclick="EJ_openExport()">Export</button>
+    </div>
+  </div>
+  <div class="timeline-container" id="timeline-container"></div>
+  <div class="input-area">
+    <div class="slash-hint">
+      <span onclick="EJ_triggerSlash('note')">/note</span>
+      <span onclick="EJ_triggerSlash('contact')">/contact</span>
+      <span onclick="EJ_triggerSlash('photo')">/photo</span>
+      <span onclick="EJ_triggerSlash('thought')">/thought</span>
+      <span onclick="EJ_triggerSlash('todo')">/todo</span>
+      <span onclick="EJ_triggerSlash('link')">/link</span>
+    </div>
+    <div class="main-input-row">
+      <textarea class="main-input" id="main-input" rows="1" placeholder="Type a note or use /command..."></textarea>
+      <button class="btn-send" onclick="EJ_handleMainInput()">&#8593;</button>
+    </div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="EJ_closeLightbox(event)">
+  <button class="lightbox-close" onclick="EJ_closeLightbox()">&#10005;</button>
+  <img id="lightbox-img" src="" alt="" />
+  <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
+<!-- MODAL: NEW EVENT -->
+<div class="modal-overlay" id="modal-new-event">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New Event</span>
+      <button class="modal-close" onclick="EJ_closeModal('modal-new-event')">&#10005;</button>
+    </div>
+    <div class="form-field"><label class="form-label">Event Name</label><input class="form-input" id="new-event-name" placeholder="e.g. Hannover Messe 2026" /></div>
+    <div class="form-field"><label class="form-label">Location</label><input class="form-input" id="new-event-location" placeholder="City, Country" /></div>
+    <div class="form-field"><label class="form-label">Date</label><input class="form-input" id="new-event-date" type="date" /></div>
+    <button class="btn-submit" onclick="EJ_createEvent()">Create Event</button>
+  </div>
+</div>
+
+<!-- MODAL: HELP -->
+<div class="modal-overlay" id="modal-help" style="align-items:center;">
+  <div class="modal modal-help-inner">
+    <div class="modal-header">
+      <span class="modal-title">Help</span>
+      <button class="modal-close" onclick="EJ_closeModal('modal-help')">&#10005;</button>
+    </div>
+    <div class="help-body">
+
+      <!-- Section 1: Features -->
+      <div class="help-section">
+        <div class="help-section-title">Features</div>
+        <div class="help-grid">
+          <div class="help-entry-types">
+            <div class="help-row"><span class="help-tag help-note">/note</span><span>Quick text note</span></div>
+            <div class="help-row"><span class="help-tag help-contact">/contact</span><span>Save a person's details</span></div>
+            <div class="help-row"><span class="help-tag help-photo">/photo</span><span>Photo with caption</span></div>
+            <div class="help-row"><span class="help-tag help-thought">/thought</span><span>Idea to revisit later</span></div>
+            <div class="help-row"><span class="help-tag help-todo">/todo</span><span>Checkbox task</span></div>
+            <div class="help-row"><span class="help-tag help-link">/link</span><span>Save a URL</span></div>
+          </div>
+          <div class="help-privacy">
+            <div class="help-privacy-title">🔒 What stays on your device</div>
+            <div class="help-privacy-row help-local">✓ All events &amp; entries</div>
+            <div class="help-privacy-row help-local">✓ Photos &amp; contacts</div>
+            <div class="help-privacy-row help-local">✓ Backups you create</div>
+            <div class="help-privacy-title" style="margin-top:10px">🌐 What needs internet</div>
+            <div class="help-privacy-row help-online">↓ First app load (fonts)</div>
+            <div class="help-privacy-row help-online">↓ ZIP export (JSZip library)</div>
+            <div class="help-privacy-note">No account. No tracking. No data ever leaves your device.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Quick Start -->
+      <div class="help-section">
+        <div class="help-section-title">Quick Start</div>
+        <div class="help-steps">
+          <div class="help-step"><span class="help-step-num">1</span><span>Tap <b>+ New Event</b> and give it a name (e.g. "Embedded World 2026")</span></div>
+          <div class="help-step"><span class="help-step-num">2</span><span>Tap the event to open it</span></div>
+          <div class="help-step"><span class="help-step-num">3</span><span>Type any text and press <b>Enter</b> to log a quick note</span></div>
+          <div class="help-step"><span class="help-step-num">4</span><span>Use slash commands (<b>/photo</b>, <b>/contact</b> …) for structured entries</span></div>
+          <div class="help-step"><span class="help-step-num">5</span><span>Tap <b>⬆ Export</b> to save a PDF or ZIP when done</span></div>
+          <div class="help-step"><span class="help-step-num">6</span><span>Use <b>☰ → Create Backup</b> regularly to keep a safe copy</span></div>
+        </div>
+      </div>
+
+      <!-- Section 3: PWA Setup -->
+      <div class="help-section">
+        <div class="help-section-title">Install as App (PWA)</div>
+        <div class="help-pwa-note">💡 A local HTML file cannot be installed as a PWA.</div>
+        <div class="help-pwa-blocks">
+          <div class="help-pwa-block">
+            <div class="help-pwa-platform">Android · Chrome</div>
+            <ol class="help-pwa-steps">
+              <li>Open the app URL in Chrome</li>
+              <li>Tap ⋮ menu → <b>Add to Home screen</b></li>
+              <li>Confirm — icon appears on home screen</li>
+            </ol>
+          </div>
+          <div class="help-pwa-block">
+            <div class="help-pwa-platform">iPhone · Safari</div>
+            <ol class="help-pwa-steps">
+              <li>Open the app URL in <b>Safari</b> (not Chrome)</li>
+              <li>Tap the Share button ⎙</li>
+              <li>Tap <b>Add to Home Screen</b> → Add</li>
+            </ol>
+          </div>
+          <div class="help-pwa-block">
+            <div class="help-pwa-platform">Desktop · Chrome or Edge</div>
+            <ol class="help-pwa-steps">
+              <li>Open the app URL</li>
+              <li>Click the install icon ⊕ in the address bar</li>
+              <li>Click <b>Install</b> — app opens in its own window</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div class="help-version">Event Journal · v0.1 beta</div>
+  </div>
+</div>
+
+<!-- MODAL: NOTE -->
+<div class="modal-overlay" id="modal-note">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" style="color:var(--note-text)">Note</span><button class="modal-close" onclick="EJ_closeModal('modal-note')">&#10005;</button></div>
+    <div class="form-field"><label class="form-label">Note</label><textarea class="form-input" id="note-text" placeholder="Write your note..."></textarea></div>
+    <button class="btn-submit" onclick="EJ_submitNote()">Add Note</button>
+  </div>
+</div>
+
+<!-- MODAL: THOUGHT -->
+<div class="modal-overlay" id="modal-thought">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" style="color:var(--thought-text)">Thought</span><button class="modal-close" onclick="EJ_closeModal('modal-thought')">&#10005;</button></div>
+    <div class="form-field"><label class="form-label">Thought / To check later</label><textarea class="form-input" id="thought-text" placeholder="Something to think about..."></textarea></div>
+    <button class="btn-submit" onclick="EJ_submitThought()">Add Thought</button>
+  </div>
+</div>
+
+<!-- MODAL: TODO -->
+<div class="modal-overlay" id="modal-todo">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" style="color:var(--todo-text)">To-do</span><button class="modal-close" onclick="EJ_closeModal('modal-todo')">&#10005;</button></div>
+    <div class="form-field"><label class="form-label">Tasks <span class="form-label-hint">one per line</span></label><textarea class="form-input form-textarea" id="todo-text" placeholder="Buy business cards&#10;Follow up with booth 42&#10;Download product catalogue" rows="5" onkeydown="if(event.ctrlKey&&event.key==='Enter'){EJ_submitTodo();}"></textarea></div>
+    <div class="form-hint">Ctrl + Enter to submit</div>
+    <button class="btn-submit" onclick="EJ_submitTodo()">Add To-dos</button>
+  </div>
+</div>
+
+<!-- MODAL: CONTACT -->
+<div class="modal-overlay" id="modal-contact">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" style="color:var(--contact-text)">Contact</span><button class="modal-close" onclick="EJ_closeModal('modal-contact')">&#10005;</button></div>
+    <div class="form-field"><label class="form-label">Name *</label><input class="form-input" id="contact-name" placeholder="Full name" /></div>
+    <div class="form-field"><label class="form-label">Company</label><input class="form-input" id="contact-company" placeholder="Company / Organisation" /></div>
+    <div class="form-field"><label class="form-label">Phone</label><input class="form-input" id="contact-phone" type="tel" placeholder="+31 6 ..." /></div>
+    <div class="form-field"><label class="form-label">Email</label><input class="form-input" id="contact-email" type="email" placeholder="name@company.com" /></div>
+    <div class="form-field"><label class="form-label">Notes</label><textarea class="form-input" id="contact-notes" placeholder="What did you discuss?"></textarea></div>
+    <button class="btn-submit" onclick="EJ_submitContact()">Add Contact</button>
+  </div>
+</div>
+
+<!-- MODAL: PHOTO -->
+<div class="modal-overlay" id="modal-photo">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" style="color:var(--photo-text)">Photo</span><button class="modal-close" onclick="EJ_closeModal('modal-photo')">&#10005;</button></div>
+    <div class="form-field">
+      <label class="form-label">Photo</label>
+      <div class="photo-preview-wrap" onclick="document.getElementById('photo-input').click()">
+        <div class="photo-placeholder" id="photo-placeholder">Tap to open camera</div>
+        <img id="photo-preview" style="display:none" />
+      </div>
+      <input type="file" id="photo-input" accept="image/*" capture="environment" onchange="EJ_handlePhotoSelect(event)" />
+    </div>
+    <div class="form-field"><label class="form-label">Caption</label><input class="form-input" id="photo-caption" placeholder="Describe what you see..." /></div>
+    <button class="btn-submit" onclick="EJ_submitPhoto()">Add Photo</button>
+  </div>
+</div>
+
+<!-- MODAL: LINK -->
+<div class="modal-overlay" id="modal-link">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" style="color:var(--link-text)">Link</span><button class="modal-close" onclick="EJ_closeModal('modal-link')">&#10005;</button></div>
+    <div class="form-field"><label class="form-label">URL *</label><input class="form-input" id="link-url" type="url" placeholder="google.com or https://example.com" /></div>
+    <div class="form-field"><label class="form-label">Title</label><input class="form-input" id="link-title" placeholder="Page or product name" /></div>
+    <div class="form-field"><label class="form-label">Notes</label><textarea class="form-input" id="link-notes" placeholder="Why is this link relevant?"></textarea></div>
+    <button class="btn-submit" onclick="EJ_submitLink()">Add Link</button>
+  </div>
+</div>
+
+<!-- MODAL: EXPORT -->
+<div class="modal-overlay" id="modal-export">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Export Event</span><button class="modal-close" onclick="EJ_closeModal('modal-export')">&#10005;</button></div>
+    <div class="export-options">
+      <button class="btn-export-opt" onclick="EJ_exportPDF()">
+        <strong>PDF report (.pdf)</strong>
+        <small>Full timeline with images embedded, print-ready</small>
+      </button>
+      <button class="btn-export-opt" onclick="EJ_exportZIP()">
+        <strong>ZIP archive (.zip)</strong>
+        <small>Markdown + eventname.assets/ folder — Typora compatible. Marks event as exported.</small>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: CONFIRM DELETE EVENT -->
+<div class="modal-overlay" id="modal-confirm-delete-event">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" style="color:var(--danger)">Delete Event</span>
+      <button class="modal-close" onclick="EJ_closeModal('modal-confirm-delete-event')">&#10005;</button>
+    </div>
+    <div class="confirm-message">
+      Are you sure you want to delete <strong id="confirm-event-name"></strong>?
+      <div class="confirm-warn">This will permanently delete all entries and photos. This cannot be undone.</div>
+    </div>
+    <div class="confirm-buttons">
+      <button class="btn-confirm-cancel" onclick="EJ_closeModal('modal-confirm-delete-event')">Cancel</button>
+      <button class="btn-confirm-delete" onclick="EJ_deleteEventConfirmed()">Delete Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: RESTORE SUMMARY -->
+<div class="modal-overlay" id="modal-restore-summary">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Restore Backup</span>
+      <button class="modal-close" onclick="EJ_closeModal('modal-restore-summary')">&#10005;</button>
+    </div>
+    <div id="restore-summary-content"></div>
+    <div class="confirm-buttons" style="margin-top:4px">
+      <button class="btn-confirm-cancel" onclick="EJ_closeModal('modal-restore-summary')">Cancel</button>
+      <button class="btn-submit" style="margin-top:0" onclick="EJ_executeRestore()">Import</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-overlay" id="progress-overlay">
+  <div class="progress-box">
+    <strong id="progress-title">Working...</strong>
+    <span id="progress-msg">Please wait</span>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ======== DB ========
+let db;
+const DB_NAME = 'FairJournal', DB_VER = 2; // keep same DB name so existing data carries over
+
+function initDB() {
+  return new Promise((res, rej) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('fairs'))   d.createObjectStore('fairs',   { keyPath: 'id' });
+      if (!d.objectStoreNames.contains('entries')) {
+        const es = d.createObjectStore('entries', { keyPath: 'id' });
+        es.createIndex('fairId', 'fairId', { unique: false });
+      }
+      if (!d.objectStoreNames.contains('blobs'))   d.createObjectStore('blobs',   { keyPath: 'id' });
+    };
+    req.onsuccess = e => { db = e.target.result; res(); };
+    req.onerror = () => rej(req.error);
+  });
+}
+
+const dbGet        = (store, key)      => new Promise((res, rej) => { const r = db.transaction(store,'readonly').objectStore(store).get(key);              r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
+const dbGetAll     = store             => new Promise((res, rej) => { const r = db.transaction(store,'readonly').objectStore(store).getAll();               r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
+const dbGetByIndex = (store, idx, val) => new Promise((res, rej) => { const r = db.transaction(store,'readonly').objectStore(store).index(idx).getAll(val); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
+const dbPut        = (store, obj)      => new Promise((res, rej) => { const r = db.transaction(store,'readwrite').objectStore(store).put(obj);              r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); });
+const dbDelete     = (store, key)      => new Promise((res, rej) => { const r = db.transaction(store,'readwrite').objectStore(store).delete(key);           r.onsuccess=()=>res();         r.onerror=()=>rej(r.error); });
+
+// ======== STATE ========
+let currentEventId  = null;
+let photoBlob       = null;
+let photoPreviewUrl = null;
+let _deleteEventId  = null;
+let _pendingRestore = null;
+
+initDB().then(() => { EJ_loadPreferences(); EJ_renderEventsList(); });
+
+// ======== PREFERENCES ========
+function EJ_setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('theme-light-btn').classList.toggle('active', theme === 'light');
+  document.getElementById('theme-dark-btn').classList.toggle('active', theme === 'dark');
+  try { localStorage.setItem('ej-theme', theme); } catch(e) {}
+}
+function EJ_setCardStyle(style) {
+  document.documentElement.setAttribute('data-cardstyle', style);
+  document.getElementById('style-bordered-btn').classList.toggle('active', style === 'bordered');
+  document.getElementById('style-tinted-btn').classList.toggle('active', style === 'tinted');
+  try { localStorage.setItem('ej-cardstyle', style); } catch(e) {}
+}
+function EJ_loadPreferences() {
+  try {
+    const theme = localStorage.getItem('ej-theme') || 'light';
+    const style = localStorage.getItem('ej-cardstyle') || 'bordered';
+    EJ_setTheme(theme);
+    EJ_setCardStyle(style);
+  } catch(e) {}
+}
+
+// ======== HAMBURGER ========
+function EJ_toggleHamburger(e) {
+  e.stopPropagation();
+  document.getElementById('hamburger-menu').classList.toggle('open');
+}
+function EJ_closeHamburger() {
+  document.getElementById('hamburger-menu').classList.remove('open');
+}
+document.addEventListener('click', () => EJ_closeHamburger());
+
+// ======== PHOTO COMPRESSION ========
+function EJ_compressImage(file) {
+  return new Promise(res => {
+    const MAX = 1800;
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      let { width, height } = img;
+      if (width > MAX || height > MAX) {
+        if (width >= height) { height = Math.round(height * MAX / width); width = MAX; }
+        else                 { width  = Math.round(width  * MAX / height); height = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob => res(blob), 'image/jpeg', 0.80);
+    };
+    img.src = url;
+  });
+}
+
+function EJ_blobToBase64(blob) {
+  return new Promise((res, rej) => {
+    const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsDataURL(blob);
+  });
+}
+
+function EJ_base64ToBlob(b64, mime) {
+  const byteStr = atob(b64.split(',')[1]);
+  const arr = new Uint8Array(byteStr.length);
+  for (let i = 0; i < byteStr.length; i++) arr[i] = byteStr.charCodeAt(i);
+  return new Blob([arr], { type: mime || 'image/jpeg' });
+}
+
+// ======== NAVIGATION ========
+function EJ_showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function EJ_goHome() {
+  currentEventId = null;
+  EJ_showScreen('screen-events');
+  EJ_renderEventsList();
+}
+
+async function EJ_openEvent(eventId) {
+  try {
+    currentEventId = eventId;
+    const ev = await dbGet('fairs', eventId);
+    if (!ev) { EJ_showToast('Event not found'); return; }
+    document.getElementById('event-title').textContent = ev.name;
+    document.getElementById('event-date-sub').textContent = [ev.location, ev.date].filter(Boolean).join(' — ');
+    EJ_showScreen('screen-event');
+    EJ_renderTimeline();
+  } catch(err) { console.error('EJ_openEvent:', err); EJ_showToast('Failed to open event'); }
+}
+
+// ======== EVENTS LIST ========
+async function EJ_renderEventsList() {
+  try {
+    const events = await dbGetAll('fairs');
+    events.sort((a, b) => b.createdAt - a.createdAt);
+    const el = document.getElementById('events-list');
+    let html = `<button class="btn-new-event" onclick="EJ_openModal('modal-new-event')">+ New Event</button>`;
+    if (events.length === 0) {
+      html += `<div class="empty-state">No events yet.<br>Start by creating your first event.</div>`;
+      el.innerHTML = html; return;
+    }
+    html += `<div class="section-label" style="margin-top:20px">Your Events</div>`;
+    for (const ev of events) {
+      const count = ev.entryCount || 0;
+      html += `<div class="event-card" onclick="EJ_openEvent('${ev.id}')">
+        <div style="flex:1">
+          <div class="event-card-name">${esc(ev.name)}</div>
+          <div class="event-card-meta">${ev.date||''} ${ev.location?'&middot; '+esc(ev.location):''} &middot; ${count} ${count===1?'entry':'entries'}</div>
+          ${EJ_buildExportBadge(ev)}
+        </div>
+        <div class="event-card-right">
+          <button class="btn-delete-event" data-event-id="${ev.id}" data-event-name="${esc(ev.name)}" onclick="event.stopPropagation(); EJ_EJ_confirmDeleteEventFromList(this.dataset.eventId, this.dataset.eventName)" title="Delete event">&#10005;</button>
+          <div class="event-card-arrow">&#8250;</div>
+        </div>
+      </div>`;
+    }
+    el.innerHTML = html;
+  } catch(err) { console.error('EJ_renderEventsList:', err); EJ_showToast('Failed to load events'); }
+}
+
+function EJ_buildExportBadge(ev) {
+  if (!ev.lastExportedAt)
+    return `<div class="export-status never"><div class="export-status-dot"></div>Never exported</div>`;
+  if ((ev.lastEntryAt||0) > ev.lastExportedAt)
+    return `<div class="export-status pending"><div class="export-status-dot"></div>Export pending</div>`;
+  const dateStr = new Date(ev.lastExportedAt).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
+  return `<div class="export-status done"><div class="export-status-dot"></div>Exported ${dateStr}</div>`;
+}
+
+async function EJ_createEvent() {
+  const name = document.getElementById('new-event-name').value.trim();
+  if (!name) { EJ_showToast('Please enter an event name'); return; }
+  const ev = {
+    id: uid(), name,
+    location: document.getElementById('new-event-location').value.trim(),
+    date: document.getElementById('new-event-date').value,
+    createdAt: Date.now(), entryCount: 0, lastEntryAt: null, lastExportedAt: null,
+  };
+  try {
+    await dbPut('fairs', ev);
+    EJ_closeModal('modal-new-event');
+    ['new-event-name','new-event-location','new-event-date'].forEach(id => document.getElementById(id).value='');
+    EJ_openEvent(ev.id);
+  } catch(err) { console.error('EJ_createEvent:', err); EJ_showToast('Failed to create event'); }
+}
+
+// ======== DELETE EVENT ========
+function EJ_confirmDeleteEvent() {
+  _deleteEventId = currentEventId;
+  dbGet('fairs', currentEventId).then(ev => {
+    document.getElementById('confirm-event-name').textContent = ev.name;
+    EJ_openModal('modal-confirm-delete-event');
+  });
+}
+
+function EJ_EJ_confirmDeleteEventFromList(eventId, eventName) {
+  _deleteEventId = eventId;
+  document.getElementById('confirm-event-name').textContent = eventName;
+  EJ_openModal('modal-confirm-delete-event');
+}
+
+async function EJ_deleteEventConfirmed() {
+  try {
+    EJ_closeModal('modal-confirm-delete-event');
+    EJ_showProgress('Deleting', 'Removing entries and photos...');
+    const eventId = _deleteEventId;
+    const entries = await dbGetByIndex('entries', 'fairId', eventId);
+    for (const e of entries) {
+      await dbDelete('entries', e.id);
+      await dbDelete('blobs', e.id);
+    }
+    await dbDelete('fairs', eventId);
+    EJ_hideProgress();
+    _deleteEventId = null;
+    if (currentEventId === eventId) { currentEventId = null; EJ_showScreen('screen-events'); }
+    EJ_renderEventsList();
+    EJ_showToast('Event deleted');
+  } catch(err) { console.error('EJ_deleteEventConfirmed:', err); EJ_hideProgress(); EJ_showToast('Delete failed'); }
+}
+
+// ======== TIMELINE ========
+async function EJ_renderTimeline() {
+  try {
+    const entries = await dbGetByIndex('entries', 'fairId', currentEventId);
+    entries.sort((a, b) => a.timestamp - b.timestamp);
+    const container = document.getElementById('timeline-container');
+    if (entries.length === 0) {
+      container.innerHTML = `<div class="timeline-empty">No entries yet.<br>Use /note /contact /photo /thought /todo /link<br>to start logging.</div>`;
+      return;
+    }
+    let html = '', lastDay = '';
+    for (const entry of entries) {
+      const d = new Date(entry.timestamp);
+      const day  = d.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+      const time = d.toLocaleTimeString('en-GB', { hour:'2-digit', minute:'2-digit' });
+      if (day !== lastDay) { html += `<div class="timeline-day">${day}</div>`; lastDay = day; }
+      html += `<div class="entry-row">${EJ_renderEntryCard(entry, time)}</div>`;
+    }
+    container.innerHTML = html;
+    for (const entry of entries) {
+      if (entry.type === 'photo') EJ_loadPhotoThumbnail(entry.id);
+    }
+    container.scrollTop = container.scrollHeight;
+  } catch(err) { console.error('EJ_renderTimeline:', err); EJ_showToast('Failed to load timeline'); }
+}
+
+async function EJ_loadPhotoThumbnail(entryId) {
+  try {
+    const record = await dbGet('blobs', entryId);
+    if (!record) return;
+    const url = URL.createObjectURL(record.blob);
+    const img = document.querySelector(`img[data-entry-id="${entryId}"]`);
+    if (img) { img.src = url; img._blobUrl = url; }
+  } catch(err) { console.error('EJ_loadPhotoThumbnail:', err); }
+}
+
+function EJ_renderEntryCard(entry, time) {
+  const del = `<button class="entry-delete" onclick="EJ_deleteEntry('${entry.id}')" title="Delete">&#10005;</button>`;
+  let inner = '';
+  const t = entry.type;
+  if (t === 'note' || t === 'thought') {
+    inner = `<div class="entry-content"><p>${esc(entry.text)}</p></div>`;
+  } else if (t === 'todo') {
+    // Support both new multi-item (items:[]) and legacy single-item (text, done)
+    const todoItems = entry.items
+      ? entry.items
+      : [{text: entry.text, done: entry.done || false}];
+    const rows = todoItems.map((item, idx) => {
+      const cls = item.done ? 'done' : '';
+      return `<div class="todo-row">
+        <div class="todo-check ${cls}" onclick="EJ_toggleTodo('${entry.id}',${idx})">${item.done?'&#10003;':''}</div>
+        <div class="todo-text ${cls}">${esc(item.text)}</div>
+      </div>`;
+    }).join('');
+    inner = rows;
+  } else if (t === 'contact') {
+    const rows = [
+      entry.company?['Company',entry.company]:null,
+      entry.phone?['Phone',entry.phone]:null,
+      entry.email?['Email',entry.email]:null,
+      entry.notes?['Notes',entry.notes]:null,
+    ].filter(Boolean);
+    inner = `<div class="entry-content">
+      <div style="font-weight:600;margin-bottom:6px">${esc(entry.name)}</div>
+      <div class="contact-grid">${rows.map(([l,v])=>`<div class="contact-label">${l}</div><div>${esc(v)}</div>`).join('')}</div>
+    </div>`;
+  } else if (t === 'photo') {
+    inner = `<div>
+      <img class="entry-photo-thumb" src="" data-entry-id="${entry.id}" alt="${esc(entry.caption)}" onclick="EJ_openLightbox('${entry.id}')" loading="lazy" />
+      ${entry.caption?`<div class="photo-caption">${esc(entry.caption)}</div>`:''}
+    </div>`;
+  } else if (t === 'link') {
+    inner = `<div class="entry-content">
+      ${entry.title?`<div class="link-title">${esc(entry.title)}</div>`:''}
+      <a class="link-url" href="${esc(entry.url)}" target="_blank" rel="noopener noreferrer">&#128279; ${esc(entry.url)}</a>
+      ${entry.notes?`<div class="link-note">${esc(entry.notes)}</div>`:''}
+    </div>`;
+  }
+  return `<div class="entry-time">${time}</div>
+    <div class="entry-card" data-type="${t}"><div class="entry-type-badge">${t}</div>${inner}${del}</div>`;
+}
+
+async function EJ_deleteEntry(id) {
+  try {
+    await dbDelete('entries', id);
+    await dbDelete('blobs', id);
+    const ev = await dbGet('fairs', currentEventId);
+    ev.entryCount = Math.max(0, (ev.entryCount||1) - 1);
+    await dbPut('fairs', ev);
+    EJ_renderTimeline();
+  } catch(err) { console.error('EJ_deleteEntry:', err); EJ_showToast('Failed to delete entry'); }
+}
+
+async function EJ_toggleTodo(id, idx) {
+  try {
+    const e = await dbGet('entries', id);
+    if (e.items && idx !== undefined) {
+      // Multi-item todo
+      e.items[idx].done = !e.items[idx].done;
+    } else {
+      // Legacy single-item todo
+      e.done = !e.done;
+    }
+    await dbPut('entries', e);
+    EJ_renderTimeline();
+  } catch(err) { console.error('EJ_toggleTodo:', err); }
+}
+
+// ======== LIGHTBOX ========
+let _lightboxEntries = [];
+
+async function EJ_openLightbox(entryId) {
+  try {
+    const entries = await dbGetByIndex('entries', 'fairId', currentEventId);
+    const photos = entries.filter(e => e.type==='photo').sort((a,b)=>a.timestamp-b.timestamp);
+    const idx = photos.findIndex(e => e.id===entryId);
+    if (idx===-1) return;
+    _lightboxEntries = photos;
+    EJ_showLightboxAt(idx);
+  } catch(err) { console.error('EJ_openLightbox:', err); }
+}
+
+async function EJ_showLightboxAt(idx) {
+  try {
+    const e = _lightboxEntries[idx]; if (!e) return;
+    const record = await dbGet('blobs', e.id);
+    const url = record ? URL.createObjectURL(record.blob) : '';
+    const lbImg = document.getElementById('lightbox-img');
+    if (lbImg._blobUrl) URL.revokeObjectURL(lbImg._blobUrl);
+    lbImg._blobUrl = url; lbImg.src = url;
+    document.getElementById('lightbox-caption').textContent = e.caption||'';
+    document.getElementById('lightbox').classList.add('open');
+    document.getElementById('lightbox')._idx = idx;
+  } catch(err) { console.error('EJ_showLightboxAt:', err); }
+}
+
+function EJ_closeLightbox(event) {
+  const lb = document.getElementById('lightbox');
+  if (!event || event.target === lb || (event.currentTarget && event.currentTarget.classList.contains('lightbox-close'))) {
+    lb.classList.remove('open');
+    const img = document.getElementById('lightbox-img');
+    if (img._blobUrl) { URL.revokeObjectURL(img._blobUrl); img._blobUrl=null; }
+    img.src='';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  const lb = document.getElementById('lightbox');
+  if (lb.classList.contains('open')) {
+    if (e.key==='ArrowRight') EJ_showLightboxAt((lb._idx+1) % _lightboxEntries.length);
+    if (e.key==='ArrowLeft')  EJ_showLightboxAt((lb._idx-1+_lightboxEntries.length) % _lightboxEntries.length);
+    if (e.key==='Escape') EJ_closeLightbox({target: lb});
+    return;
+  }
+  if (e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+});
+
+// ======== INPUT ========
+document.getElementById('main-input').addEventListener('keydown', function(e) {
+  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); EJ_handleMainInput(); }
+});
+document.getElementById('main-input').addEventListener('input', function() {
+  const cmds = ['/note','/contact','/photo','/thought','/todo','/link'];
+  const match = cmds.find(c => this.value.trim().toLowerCase() === c);
+  if (match) { this.value=''; EJ_triggerSlash(match.slice(1)); }
+});
+
+function EJ_handleMainInput() {
+  const val = document.getElementById('main-input').value.trim();
+  if (!val) return;
+  const cmds = ['/note','/contact','/photo','/thought','/todo','/link'];
+  const match = cmds.find(c => val.toLowerCase().startsWith(c));
+  if (match) { document.getElementById('main-input').value=''; EJ_triggerSlash(match.slice(1)); }
+  else { EJ_addEntry({type:'note', text:val}); document.getElementById('main-input').value=''; }
+}
+
+function EJ_triggerSlash(type) { EJ_openModal('modal-'+type); }
+
+// ======== ENTRY SUBMISSIONS ========
+function EJ_submitNote() {
+  const text = document.getElementById('note-text').value.trim();
+  if (!text) return;
+  EJ_addEntry({type:'note', text});
+  document.getElementById('note-text').value='';
+  EJ_closeModal('modal-note');
+}
+
+function EJ_submitThought() {
+  const text = document.getElementById('thought-text').value.trim();
+  if (!text) return;
+  EJ_addEntry({type:'thought', text});
+  document.getElementById('thought-text').value='';
+  EJ_closeModal('modal-thought');
+}
+
+function EJ_submitTodo() {
+  const raw = document.getElementById('todo-text').value;
+  const items = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  if (!items.length) { EJ_showToast('Please enter at least one task'); return; }
+  // Each item: {text, done:false}
+  EJ_addEntry({type:'todo', items: items.map(t => ({text:t, done:false}))});
+  document.getElementById('todo-text').value='';
+  EJ_closeModal('modal-todo');
+}
+
+function EJ_submitContact() {
+  const name = document.getElementById('contact-name').value.trim();
+  if (!name) { EJ_showToast('Name is required'); return; }
+  EJ_addEntry({
+    type:'contact', name,
+    company: document.getElementById('contact-company').value.trim(),
+    phone:   document.getElementById('contact-phone').value.trim(),
+    email:   document.getElementById('contact-email').value.trim(),
+    notes:   document.getElementById('contact-notes').value.trim(),
+  });
+  ['contact-name','contact-company','contact-phone','contact-email','contact-notes'].forEach(id => document.getElementById(id).value='');
+  EJ_closeModal('modal-contact');
+}
+
+async function EJ_handlePhotoSelect(e) {
+  try {
+    const file = e.target.files[0];
+    if (!file) return;
+    EJ_showToast('Compressing photo...');
+    photoBlob = await EJ_compressImage(file);
+    if (photoPreviewUrl) URL.revokeObjectURL(photoPreviewUrl);
+    photoPreviewUrl = URL.createObjectURL(photoBlob);
+    const img = document.getElementById('photo-preview');
+    img.src = photoPreviewUrl; img.style.display = 'block';
+    document.getElementById('photo-placeholder').style.display = 'none';
+  } catch(err) { console.error('EJ_handlePhotoSelect:', err); EJ_showToast('Failed to process photo'); }
+}
+
+async function EJ_submitPhoto() {
+  try {
+    if (!photoBlob) { EJ_showToast('Please select a photo'); return; }
+    const caption = document.getElementById('photo-caption').value.trim();
+    await EJ_addEntry({type:'photo', caption}, photoBlob);
+    photoBlob = null;
+    if (photoPreviewUrl) { URL.revokeObjectURL(photoPreviewUrl); photoPreviewUrl=null; }
+    document.getElementById('photo-preview').style.display='none';
+    document.getElementById('photo-preview').src='';
+    document.getElementById('photo-placeholder').style.display='';
+    document.getElementById('photo-caption').value='';
+    document.getElementById('photo-input').value='';
+    EJ_closeModal('modal-photo');
+  } catch(err) { console.error('EJ_submitPhoto:', err); EJ_showToast('Failed to save photo'); }
+}
+
+function EJ_submitLink() {
+  let rawUrl = document.getElementById('link-url').value.trim();
+  if (!rawUrl) { EJ_showToast('URL is required'); return; }
+  // Auto-prepend https:// if no scheme present (e.g. "google.com" → "https://google.com")
+  if (!/^https?:\/\//i.test(rawUrl)) rawUrl = 'https://' + rawUrl;
+  // Validate — block javascript: data: and other non-http URIs
+  try {
+    const parsed = new URL(rawUrl);
+    if (!['http:','https:'].includes(parsed.protocol)) {
+      EJ_showToast('Only http:// and https:// URLs are allowed'); return;
+    }
+  } catch { EJ_showToast('Please enter a valid URL (e.g. google.com)'); return; }
+  EJ_addEntry({
+    type:'link', url: rawUrl,
+    title: document.getElementById('link-title').value.trim(),
+    notes: document.getElementById('link-notes').value.trim(),
+  });
+  ['link-url','link-title','link-notes'].forEach(id => document.getElementById(id).value='');
+  EJ_closeModal('modal-link');
+}
+
+async function EJ_addEntry(data, blob) {
+  try {
+    const entry = {id:uid(), fairId:currentEventId, timestamp:Date.now(), ...data};
+    await dbPut('entries', entry);
+    if (blob) await dbPut('blobs', {id:entry.id, blob});
+    const ev = await dbGet('fairs', currentEventId);
+    ev.entryCount = (ev.entryCount||0) + 1;
+    ev.lastEntryAt = entry.timestamp;
+    await dbPut('fairs', ev);
+    EJ_renderTimeline();
+    EJ_showToast(data.type.charAt(0).toUpperCase() + data.type.slice(1) + ' added');
+  } catch(err) { console.error('EJ_addEntry:', err); EJ_showToast('Failed to save entry'); }
+}
+
+// ======== EXPORT ========
+function EJ_openExport() { EJ_openModal('modal-export'); }
+
+async function EJ_getExportData() {
+  const ev = await dbGet('fairs', currentEventId);
+  const entries = await dbGetByIndex('entries', 'fairId', currentEventId);
+  entries.sort((a, b) => a.timestamp - b.timestamp);
+  return {ev, entries};
+}
+
+async function EJ_exportPDF() {
+  EJ_closeModal('modal-export');
+  EJ_showProgress('Generating PDF', 'Loading photos...');
+  try {
+    const {ev, entries} = await EJ_getExportData();
+    const colors = {note:'#2383e2', contact:'#0f7b6c', photo:'#9065b0', thought:'#cb912f', todo:'#d44c47', link:'#448361'};
+    let lastDay='', bodyHtml='';
+    for (const e of entries) {
+      const d = new Date(e.timestamp);
+      const day  = d.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+      const time = d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+      if (day!==lastDay) { bodyHtml+=`<div class="day-header">${day}</div>`; lastDay=day; }
+      let content='';
+      if (e.type==='note'||e.type==='thought') {
+        content=`<p>${esc(e.text)}</p>`;
+      } else if (e.type==='todo') {
+        const pdfItems = e.items ? e.items : [{text:e.text, done:e.done||false}];
+        content = pdfItems.map(item =>
+          `<div class="todo-item"><span class="todo-box">${item.done?'&#10003;':''}</span><span class="${item.done?'done':''}">${esc(item.text)}</span></div>`
+        ).join('');
+      } else if (e.type==='link') {
+        if (e.title) content+=`<div style="font-weight:600;margin-bottom:3px">${esc(e.title)}</div>`;
+        // Only render http/https links; validate before placing in href
+        const safeUrl = (()=>{ try { const u=new URL(e.url); return ['http:','https:'].includes(u.protocol)?e.url:''; } catch{return '';} })();
+        content+=safeUrl
+          ? `<a href="${esc(safeUrl)}" style="font-family:monospace;font-size:11px;color:#448361">${esc(safeUrl)}</a>`
+          : `<span style="font-family:monospace;font-size:11px;color:#9b9a97">${esc(e.url)}</span>`;
+        if (e.notes) content+=`<div style="font-size:12px;color:#9b9a97;margin-top:3px">${esc(e.notes)}</div>`;
+      } else if (e.type==='contact') {
+        content=`<div class="contact-name">${esc(e.name)}</div><table class="contact-table">`;
+        if (e.company) content+=`<tr><td class="cl">Company</td><td>${esc(e.company)}</td></tr>`;
+        if (e.phone)   content+=`<tr><td class="cl">Phone</td><td>${esc(e.phone)}</td></tr>`;
+        if (e.email)   content+=`<tr><td class="cl">Email</td><td>${esc(e.email)}</td></tr>`;
+        if (e.notes)   content+=`<tr><td class="cl">Notes</td><td>${esc(e.notes)}</td></tr>`;
+        content+=`</table>`;
+      } else if (e.type==='photo') {
+        const record = await dbGet('blobs', e.id);
+        if (record) { const b64=await EJ_blobToBase64(record.blob); content+=`<img src="${b64}" class="photo-img" />`; }
+        if (e.caption) content+=`<div class="photo-cap">${esc(e.caption)}</div>`;
+      }
+      const col = colors[e.type]||'#999';
+      bodyHtml+=`<div class="entry" style="border-left-color:${col}">
+        <div class="entry-header"><span class="entry-type" style="color:${col}">${e.type.toUpperCase()}</span><span class="entry-time">${time}</span></div>
+        <div class="entry-body">${content}</div>
+      </div>`;
+    }
+    const meta = [ev.location, ev.date].filter(Boolean).map(s=>esc(s)).join(' — ');
+    const printHtml=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${esc(ev.name)}</title>
+<style>body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:720px;margin:0 auto;padding:40px 30px;color:#37352f;font-size:13px;line-height:1.5;}
+h1{font-size:22px;font-weight:700;margin-bottom:4px;}.meta{color:#9b9a97;font-size:12px;font-family:monospace;margin-bottom:32px;}
+.day-header{font-family:monospace;font-size:10px;text-transform:uppercase;letter-spacing:0.06em;color:#9b9a97;border-top:1px solid #e9e9e7;padding-top:14px;margin:14px 0 8px;}
+.entry{border-left:3px solid #999;padding:10px 14px;margin-bottom:8px;background:#fff;border:1px solid #e9e9e7;border-left-width:3px;border-radius:4px;page-break-inside:avoid;}
+.entry-header{display:flex;justify-content:space-between;margin-bottom:6px;}.entry-type{font-family:monospace;font-size:9px;font-weight:700;letter-spacing:0.06em;}
+.entry-time{font-family:monospace;font-size:10px;color:#9b9a97;}.entry-body{font-size:13px;}.entry-body p{margin:0;}
+.contact-name{font-weight:600;margin-bottom:6px;}.contact-table{border-collapse:collapse;font-size:12px;}
+.contact-table td{padding:1px 8px 1px 0;vertical-align:top;}.cl{color:#9b9a97;font-family:monospace;font-size:10px;white-space:nowrap;}
+.photo-img{max-width:100%;max-height:380px;object-fit:contain;display:block;border-radius:3px;margin-bottom:6px;}
+.photo-cap{font-style:italic;color:#9b9a97;font-size:12px;}.todo-item{display:flex;gap:8px;align-items:flex-start;}
+.todo-box{border:1.5px solid currentColor;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:1px;}
+.done{text-decoration:line-through;color:#9b9a97;}@media print{body{padding:20px;}}</style>
+</head><body><h1>${esc(ev.name)}</h1><div class="meta">${meta}</div>${bodyHtml}</body></html>`;
+    EJ_hideProgress();
+    const win = window.open('','_blank');
+    if (!win) { EJ_showToast('Allow popups to export PDF'); return; }
+    win.document.write(printHtml); win.document.close(); win.onload=()=>{ win.focus(); win.print(); };
+  } catch(err) { console.error('EJ_exportPDF:', err); EJ_hideProgress(); EJ_showToast('PDF export failed'); }
+}
+
+async function EJ_exportZIP() {
+  EJ_closeModal('modal-export');
+  EJ_showProgress('Generating ZIP','Loading dependencies...');
+  try {
+    await EJ_ensureJSZip();
+    const {ev, entries} = await EJ_getExportData();
+    const slug = slugify(ev.name);
+    const assetsFolder = `${slug}.assets`;
+    let md = `# ${ev.name}\n`;
+    if (ev.location) md+=`**Location:** ${ev.location}  \n`;
+    if (ev.date)     md+=`**Date:** ${ev.date}  \n`;
+    md+=`\n---\n\n`;
+    let lastDay='', imgIndex=1;
+    const images=[];
+    EJ_showProgress('Generating ZIP','Building markdown...');
+    for (const e of entries) {
+      const d = new Date(e.timestamp);
+      const day  = d.toLocaleDateString('en-GB', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+      const time = d.toLocaleTimeString('en-GB', {hour:'2-digit', minute:'2-digit'});
+      if (day!==lastDay) { md+=`## ${day}\n\n`; lastDay=day; }
+      md+=`### ${time} — ${e.type.toUpperCase()}\n\n`;
+      if (e.type==='note'||e.type==='thought') {
+        md+=`${e.text}\n\n`;
+      } else if (e.type==='todo') {
+        const mdItems = e.items ? e.items : [{text:e.text, done:e.done||false}];
+        md += mdItems.map(item => `- [${item.done?'x':' '}] ${item.text}`).join('\n') + '\n\n';
+      } else if (e.type==='link') {
+        if (e.title) md+=`**${e.title}**  \n`;
+        md+=`[${e.url}](${e.url})  \n`;
+        if (e.notes) md+=`${e.notes}  \n`;
+        md+='\n';
+      } else if (e.type==='contact') {
+        md+=`**${e.name}**  \n`;
+        if (e.company) md+=`Company: ${e.company}  \n`;
+        if (e.phone)   md+=`Phone: ${e.phone}  \n`;
+        if (e.email)   md+=`Email: ${e.email}  \n`;
+        if (e.notes)   md+=`Notes: ${e.notes}  \n`;
+        md+='\n';
+      } else if (e.type==='photo') {
+        const record = await dbGet('blobs', e.id);
+        if (record) {
+          const fname=`photo_${String(imgIndex).padStart(3,'0')}.jpg`;
+          images.push({fname, blob:record.blob}); imgIndex++;
+          if (e.caption) md+=`_${e.caption}_\n\n`;
+          md+=`![${e.caption||'photo'}](${assetsFolder}/${fname})\n\n`;
+        }
+      }
+    }
+    EJ_showProgress('Generating ZIP','Packaging files...');
+    const zip = new JSZip();
+    zip.file(`${slug}.md`, md);
+    for (const img of images) {
+      const b64 = await EJ_blobToBase64(img.blob);
+      zip.file(`${assetsFolder}/${img.fname}`, b64.split(',')[1], {base64:true});
+    }
+    const zipBlob = await zip.generateAsync({type:'blob'});
+    const ev2 = await dbGet('fairs', currentEventId);
+    ev2.lastExportedAt = Date.now();
+    await dbPut('fairs', ev2);
+    EJ_hideProgress();
+    EJ_triggerDownload(zipBlob, `${slug}.zip`);
+    EJ_showToast('ZIP exported');
+  } catch(err) { console.error('EJ_exportZIP:', err); EJ_hideProgress(); EJ_showToast('ZIP export failed'); }
+}
+
+// ======== BACKUP ========
+async function EJ_createBackup() {
+  EJ_showProgress('Creating Backup','Reading events...');
+  try {
+    await EJ_ensureJSZip();
+    const events  = await dbGetAll('fairs');
+    const entries = await dbGetAll('entries');
+    EJ_showProgress('Creating Backup','Packaging photos...');
+    const zip = new JSZip();
+    const data = {version:1, exportedAt:Date.now(), fairs:events, entries};
+    zip.file('data.json', JSON.stringify(data));
+    const photoEntries = entries.filter(e => e.type==='photo');
+    for (const e of photoEntries) {
+      const record = await dbGet('blobs', e.id);
+      if (record) {
+        const b64 = await EJ_blobToBase64(record.blob);
+        zip.file(`images/${e.id}.jpg`, b64.split(',')[1], {base64:true});
+      }
+    }
+    EJ_showProgress('Creating Backup','Compressing...');
+    const zipBlob = await zip.generateAsync({type:'blob'});
+    EJ_hideProgress();
+    const date = new Date().toISOString().split('T')[0];
+    EJ_triggerDownload(zipBlob, `eventjournal-backup-${date}.zip`);
+    EJ_showToast('Backup created');
+  } catch(err) { console.error('EJ_createBackup:', err); EJ_hideProgress(); EJ_showToast('Backup failed'); }
+}
+
+// ======== RESTORE ========
+function EJ_triggerRestore() {
+  document.getElementById('restore-input').click();
+}
+
+async function EJ_handleRestoreFile(e) {
+  const file = e.target.files[0];
+  document.getElementById('restore-input').value='';
+  if (!file) return;
+  EJ_showProgress('Reading Backup','Parsing file...');
+  await EJ_ensureJSZip();
+  let zip, data;
+  try {
+    zip = await JSZip.loadAsync(file);
+    const dataFile = zip.file('data.json');
+    if (!dataFile) throw new Error('Not a valid Event Journal backup');
+    data = JSON.parse(await dataFile.async('string'));
+    if (!data.fairs || !data.entries) throw new Error('Backup file is corrupt');
+  } catch(err) {
+    EJ_hideProgress();
+    EJ_showToast('Invalid backup file');
+    return;
+  }
+  const existingFairs   = await dbGetAll('fairs');
+  const existingEntries = await dbGetAll('entries');
+  const existingFairIds  = new Set(existingFairs.map(f=>f.id));
+  const existingEntryIds = new Set(existingEntries.map(e=>e.id));
+  const newFairs   = data.fairs.filter(f => !existingFairIds.has(f.id));
+  const newEntries = data.entries.filter(e => !existingEntryIds.has(e.id));
+  const newPhotos  = newEntries.filter(e => e.type==='photo');
+  EJ_hideProgress();
+  _pendingRestore = {zip, data, newFairs, newEntries, newPhotos};
+  const skippedFairs = data.fairs.length - newFairs.length;
+  document.getElementById('restore-summary-content').innerHTML = `
+    <div class="restore-summary">
+      <div class="restore-summary-row"><span>Events in backup</span><span>${data.fairs.length}</span></div>
+      <div class="restore-summary-row"><span>New events to import</span><span>${newFairs.length}</span></div>
+      <div class="restore-summary-row"><span>Already exist (skipped)</span><span>${skippedFairs}</span></div>
+      <div class="restore-summary-row" style="margin-top:8px"><span>New entries to import</span><span>${newEntries.length}</span></div>
+      <div class="restore-summary-row"><span>Photos to restore</span><span>${newPhotos.length}</span></div>
+    </div>
+    ${newFairs.length===0 ? `<div class="restore-note">No new events found. Your data is already up to date.</div>` : `<div class="restore-note">Only new events and entries will be imported.<br>Existing data will not be changed.</div>`}
+  `;
+  EJ_openModal('modal-restore-summary');
+}
+
+async function EJ_executeRestore() {
+  EJ_closeModal('modal-restore-summary');
+  if (!_pendingRestore) return;
+  const {zip, newFairs, newEntries, newPhotos} = _pendingRestore;
+  if (newFairs.length===0 && newEntries.length===0) {
+    EJ_showToast('Nothing new to import'); _pendingRestore=null; return;
+  }
+  try {
+    EJ_showProgress('Restoring','Importing events...');
+    for (const ev of newFairs) await dbPut('fairs', ev);
+    EJ_showProgress('Restoring','Importing entries...');
+    for (const entry of newEntries) await dbPut('entries', entry);
+    let photoCount=0;
+    for (const entry of newPhotos) {
+      EJ_showProgress('Restoring', `Restoring photos (${photoCount} / ${newPhotos.length})...`);
+      const imgFile = zip.file(`images/${entry.id}.jpg`);
+      if (imgFile) {
+        const b64 = await imgFile.async('base64');
+        const blob = EJ_base64ToBlob('data:image/jpeg;base64,'+b64, 'image/jpeg');
+        await dbPut('blobs', {id:entry.id, blob});
+      }
+      photoCount++;
+    }
+    _pendingRestore=null;
+    EJ_hideProgress();
+    EJ_renderEventsList();
+    EJ_showToast(`Imported ${newFairs.length} event${newFairs.length!==1?'s':''}, ${newEntries.length} entries`);
+  } catch(err) { console.error('EJ_executeRestore:', err); EJ_hideProgress(); EJ_showToast('Restore failed'); _pendingRestore=null; }
+}
+
+// ======== MODAL ========
+function EJ_openModal(id) {
+  document.getElementById(id).classList.add('open');
+  if (id==='modal-new-event') {
+    const d = document.getElementById('new-event-date');
+    if (!d.value) d.value = new Date().toISOString().split('T')[0];
+  }
+}
+function EJ_closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', function(e) { if (e.target===this) this.classList.remove('open'); });
+});
+
+// ======== PROGRESS ========
+function EJ_showProgress(title, msg) {
+  document.getElementById('progress-title').textContent = title;
+  document.getElementById('progress-msg').textContent = msg;
+  document.getElementById('progress-overlay').classList.add('open');
+}
+function EJ_hideProgress() { document.getElementById('progress-overlay').classList.remove('open'); }
+
+// ======== TOAST ========
+let toastTimer;
+function EJ_showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+// ======== UTILS ========
+function uid()      { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
+function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''); }
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/\n/g,'<br>');
+}
+function EJ_triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=filename; a.click();
+  setTimeout(()=>URL.revokeObjectURL(url), 5000);
+}
+async function EJ_ensureJSZip() {
+  if (!window.JSZip) {
+    try {
+      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+    } catch(err) { throw new Error('Failed to load JSZip — check your internet connection'); }
+  }
+}
+function loadScript(src) {
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s);
+  });
+}
+</script>
+</body>
+</html>
