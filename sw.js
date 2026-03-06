@@ -1,22 +1,19 @@
 // Event Journal — Service Worker
-// Caches the app shell for full offline support
-
-const CACHE = 'event-journal-v6';
+const CACHE = 'ej-20260306-1153';
 const SHELL = [
   './',
   './index.html',
   'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap',
 ];
 
-// Install: cache app shell
+// Install: cache app shell — wait for user acknowledgement before activating
 self.addEventListener('install', event => {
-  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE).then(cache => cache.addAll(SHELL).catch(() => {}))
   );
 });
 
-// Activate: remove old caches
+// Activate: remove old caches then claim clients
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -25,17 +22,14 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: cache-first for app shell, network-first for everything else
+// Fetch: cache-first for shell, network-first for everything else
 self.addEventListener('fetch', event => {
-  // Skip non-GET and chrome-extension requests
   if (event.request.method !== 'GET') return;
   if (!event.request.url.startsWith('http')) return;
-
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        // Cache same-origin and font responses
         if (response.ok && (
           event.request.url.includes(self.location.origin) ||
           event.request.url.includes('fonts.googleapis.com') ||
@@ -48,4 +42,9 @@ self.addEventListener('fetch', event => {
       }).catch(() => cached || new Response('Offline', { status: 503 }));
     })
   );
+});
+
+// When app sends 'skipWaiting', activate the new SW immediately
+self.addEventListener('message', event => {
+  if (event.data === 'skipWaiting') self.skipWaiting();
 });
