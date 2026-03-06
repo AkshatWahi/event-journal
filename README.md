@@ -2,7 +2,7 @@
 
 A pocket journal for events, trade shows and fairs. Capture notes, contacts, photos, tasks and links — all stored locally on your device. No account, no server, no tracking.
 
-**[→ Open the app](https://YOUR_USERNAME.github.io/event-journal/)**
+**[→ Open the app](https://akshatwahi.github.io/event-journal/)**
 
 ---
 
