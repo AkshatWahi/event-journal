@@ -1,8 +1,10 @@
 // Event Journal — Service Worker
-const CACHE = 'ej-20260306-1420';
+const CACHE = 'ej-20260308-1259';
 const SHELL = [
   './',
   './index.html',
+  './style.css',
+  './app.js',
   'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap',
 ];
 
