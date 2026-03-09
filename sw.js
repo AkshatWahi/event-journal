@@ -1,5 +1,5 @@
 // Event Journal — Service Worker
-const CACHE = 'ej-20260308-1259';
+const CACHE = 'ej-20260309-2141';
 const SHELL = [
   './',
   './index.html',
