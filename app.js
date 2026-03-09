@@ -85,7 +85,7 @@ async function EJ_loadDemoEvent() {
       {id:'demo-e8', fairId, type:'todo',    timestamp:d1+ 3*3600000+ 50*60000, activityId:coBasler,  activityType:'company',  items:[{text:'Request CXP-12 pricing sheet',done:true},{text:'Confirm Q3 SDK beta access',done:false},{text:'Connect on LinkedIn',done:false}]},
     ];
     for (const e of entries) await dbPut('entries', e);
-    await dbPut('fairs', {id:fairId, name:'Embedded World 2026', location:'Nuremberg, DE', date:'2026-03-11', endDate:'2026-03-12', createdAt:d1-3600000, entryCount:entries.length, lastEntryAt:entries[entries.length-1].timestamp, lastExportedAt:null}); // demo-e8 is a todo with 1/3 done — shows in Basler block header
+    await dbPut('fairs', {id:fairId, name:'Demo Event', location:'Nuremberg, DE', date:'2026-03-11', endDate:'2026-03-12', createdAt:d1-3600000, entryCount:entries.length, lastEntryAt:entries[entries.length-1].timestamp, lastExportedAt:null}); // demo-e8 is a todo with 1/3 done — shows in Basler block header
     await EJ_renderEventsList(); EJ_showToast('Demo event loaded');
   } catch(err) { console.error('Demo load failed', err); EJ_showToast('Failed to load demo'); }
 }
